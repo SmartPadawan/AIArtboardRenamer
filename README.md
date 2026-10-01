@@ -5,7 +5,7 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
 ## Features
 - **Batch Rename or Individual Selection**: Rename all artboards or select specific ones.
 - **Custom Prefix and Suffix**: Add a prefix and/or suffix to artboard names.
-- **Flexible Numbering Formats**: Choose from:
+- **Flexible Numbering Formats**: No numbering, or choose from:
   - `1, 2, 3, ...`
   - `01, 02, 03, ...`
   - `001, 002, 003, ...`
@@ -27,19 +27,22 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
    - **Select Artboards**: Use the checkboxes to choose which artboards to rename, or click the global "Prefix" checkbox to select all.
    - **Mode**: Choose `Prefix / Suffix / Numbering` to build new names, or `Find & Replace` to edit the existing ones.
    - **Prefix and Suffix**: Enter desired text to prepend or append to artboard names.
-   - **Numbering Format**: Choose one of the three styles:
+   - **Keep original name**: Keep the current name between prefix and suffix (e.g. `SICIM-` + `Deutchland-color`). Uncheck it to replace the name entirely.
+   - **Numbering Format**: Choose `None` or one of the three styles:
      - `1, 2, 3, ...`
      - `01, 02, 03, ...`
      - `001, 002, 003, ...`
    - **Find & Replace**: Enter the text to find and its replacement. Enable `Match case` for case-sensitive search, or `Regular expression` to use a JavaScript regex (with `$1`, `$2`, ... in the replacement).
    - **Live Preview**: Enable the "Preview" option to instantly view changes.
-4. Click **OK** to rename the selected artboards or **Cancel** to exit without changes.
+4. Click **Rename** to rename the selected artboards. The dialog stays open, so you can apply more changes.
+5. Click **OK** to close the script.
 
 ## Options Explained
 - **Individual Artboard Selection**: Each artboard has its own checkbox for precise renaming control.
 - **Prefix**: Text added at the beginning of each artboard name.
 - **Suffix**: Text added at the end of each artboard name.
-- **Numbering Format**: Auto-number artboards with three options:
+- **Keep original name**: The new name is `prefix + original name + number + suffix`. When unchecked, it is `prefix + number + suffix`.
+- **Numbering Format**: No numbering (`None`), or auto-number artboards with three options:
   - Simple: `1, 2, 3, ...`
   - Padded with one zero: `01, 02, 03, ...`
   - Padded with two zeros: `001, 002, 003, ...`
@@ -57,7 +60,7 @@ Click the image or [here](https://www.youtube.com/watch?v=93vuokYAakc) to watch 
 
 
 ## Example Scenarios
-- Rename all artboards to `Page_01`, `Page_02`, `Page_03`, ...
+- Rename all artboards to `Page_01`, `Page_02`, `Page_03`, ... (uncheck *Keep original name*).
 - Add a custom prefix like `Draft_` and suffix like `_v1` to each artboard name.
 - Replace `Draft` with `Final` in all artboard names.
 - Use live preview to fine-tune naming before applying changes.
