@@ -1,9 +1,9 @@
 /**
- * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.0.0 Jan 09 2025 12:34:56 GMT+0000
+ * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.1.0 Oct 01 2026 12:00:00 GMT+0000
  */
 /*
 <javascriptresource>
-<about>$$$/JavaScripts/BatchArtBoardRenamer/About=Batch ArtBoard Renamer - By Abdul Karim Mia.^r^rCopyright 2025 Abdul Karim Mia.^r^rBatch renaming of Illustrator artboards with options for prefix, suffix, and auto-numbering in different formats.^r</about>
+<about>$$$/JavaScripts/BatchArtBoardRenamer/About=Batch ArtBoard Renamer - By Abdul Karim Mia.^r^rCopyright 2025 Abdul Karim Mia.^r^rBatch renaming of Illustrator artboards with options for prefix, suffix, auto-numbering in different formats, and find & replace.^r</about>
 <category>Abdul's Scripts</category>
 </javascriptresource>
 
@@ -22,6 +22,9 @@ Release Notes:
   - Options for prefix, suffix, and numbering formats (1, 2, 3... or 01, 02, 03... or 001, 002, 003...).
   - Preview feature to visualize changes before applying.
   - Tested on Illustrator CC 2015 to CC 2024.
+- 1.1.0: Find & Replace
+  - New "Find & Replace" mode to search and replace text in existing artboard names.
+  - Options for case-sensitive matching and regular expressions.
 
 How to Use:
 1. Open the script in Adobe Illustrator.
@@ -39,6 +42,8 @@ Features:
   - 01, 02, 03, 04, ...
   - 001, 002, 003, 004, ...
 - Auto-numbering: The script automatically numbers artboards sequentially.
+- Find & Replace: Replace text in the existing artboard names, optionally
+  case-sensitive or using regular expressions.
 - Preview: A preview option allows you to see changes before applying.
 
 Note: Ensure that Adobe Illustrator is running before executing the script.
@@ -142,6 +147,7 @@ function addNewRow(ind, addTo) {
     obj.indNum.preferredSize.width = 40;
     obj.indNum.text = ind + 1;
     obj.artinCb.cbFor = ind;
+    obj.artinCb.onClick = previewClick;
     allItms.push(obj);
 }
 chkAllPre.onClick = function () {
@@ -150,6 +156,26 @@ chkAllPre.onClick = function () {
     }
     previewClick();
 }
+
+// MODEG
+// =====
+var modeG = artboardRenamer.add("group", undefined, { name: "modeG" });
+modeG.orientation = "row";
+modeG.alignChildren = ["left", "center"];
+modeG.spacing = 10;
+modeG.margins = 0;
+
+var modeT = modeG.add("statictext", undefined, undefined, { name: "modeT" });
+modeT.text = "Mode";
+modeT.preferredSize.width = 50;
+
+var modeNum = modeG.add("radiobutton", undefined, undefined, { name: "modeNum" });
+modeNum.text = "Prefix / Suffix / Numbering";
+modeNum.value = true;
+modeNum.onClick = modeClick;
+var modeFR = modeG.add("radiobutton", undefined, undefined, { name: "modeFR" });
+modeFR.text = "Find & Replace";
+modeFR.onClick = modeClick;
 
 // PRESUG
 // ======
@@ -208,6 +234,63 @@ oneZ.onClick = previewClick;
 var tZero = forMatG.add("radiobutton", undefined, undefined, { name: "tZero" });
 tZero.text = "001,002,003,004,005,006, ...";
 tZero.onClick = previewClick;
+// ARTBOARDRENAMER
+// ===============
+var divider2 = artboardRenamer.add("panel", undefined, undefined, { name: "divider2" });
+divider2.alignment = "fill";
+
+// FINDREPG
+// ========
+var findRepG = artboardRenamer.add("group", undefined, { name: "findRepG" });
+findRepG.orientation = "column";
+findRepG.alignChildren = ["left", "center"];
+findRepG.spacing = 10;
+findRepG.margins = 0;
+
+var findRowG = findRepG.add("group", undefined, { name: "findRowG" });
+findRowG.orientation = "row";
+findRowG.alignChildren = ["left", "center"];
+findRowG.spacing = 10;
+findRowG.margins = 0;
+
+var findT = findRowG.add("statictext", undefined, undefined, { name: "findT" });
+findT.text = "Find";
+findT.preferredSize.width = 50;
+
+var findV = findRowG.add('edittext {properties: {name: "findV"}}');
+findV.preferredSize.width = 150;
+findV.onChange = previewClick;
+var replT = findRowG.add("statictext", undefined, undefined, { name: "replT" });
+replT.text = "Replace";
+replT.preferredSize.width = 50;
+
+var replV = findRowG.add('edittext {properties: {name: "replV"}}');
+replV.preferredSize.width = 150;
+replV.onChange = previewClick;
+
+var findOptG = findRepG.add("group", undefined, { name: "findOptG" });
+findOptG.orientation = "row";
+findOptG.alignChildren = ["left", "center"];
+findOptG.spacing = 10;
+findOptG.margins = [60, 0, 0, 0];
+
+var matchCase = findOptG.add("checkbox", undefined, undefined, { name: "matchCase" });
+matchCase.text = "Match case";
+matchCase.onClick = previewClick;
+var useRegex = findOptG.add("checkbox", undefined, undefined, { name: "useRegex" });
+useRegex.text = "Regular expression";
+useRegex.onClick = previewClick;
+
+function updateMode() {
+    preSuG.enabled = modeNum.value;
+    numFG.enabled = modeNum.value;
+    findRepG.enabled = modeFR.value;
+}
+function modeClick() {
+    updateMode();
+    previewClick();
+}
+updateMode();
 // MAINUIG
 // =======
 var mainuiG = artboardRenamer.add("group", undefined, { name: "mainuiG" });
@@ -223,23 +306,41 @@ preview.onClick = previewClick;
 
 function previewClick() {
     for (i = 0; i < allItms.length; i++) {
-        if (!preview.value) {
-            allItms[i].oldArtName.text = allItms[i].oldArtName.orginalText;
-            continue;
-        }
         var itm = allItms[i];
-        if (itm.artinCb.value) {
-            if (need.value) {
-                var num = i + 1;
-            } else if (oneZ.value) {
-                var num = zeroPad(i + 1, 2);
-            } else {
-                var num = zeroPad(i + 1, 3);
-            }
-
-            allItms[i].oldArtName.text = prefixV.text + num + suffV.text;
+        var newName = itm.oldArtName.orginalText;
+        if (preview.value && itm.artinCb.value) {
+            try {
+                newName = getNewName(i) || newName;
+            } catch (e) { } // Invalid regular expression: keep the original name
         }
+        itm.oldArtName.text = newName;
     }
+}
+
+function getNewName(ind) {
+    if (modeFR.value) {
+        return findReplace(allItms[ind].oldArtName.orginalText);
+    }
+    if (need.value) {
+        var num = ind + 1;
+    } else if (oneZ.value) {
+        var num = zeroPad(ind + 1, 2);
+    } else {
+        var num = zeroPad(ind + 1, 3);
+    }
+    return prefixV.text + num + suffV.text;
+}
+
+function findReplace(name) {
+    if (findV.text == '') return name;
+    var pattern = findV.text;
+    var replacement = replV.text;
+    if (!useRegex.value) {
+        pattern = pattern.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+        replacement = replacement.replace(/\$/g, '$$$$');
+    }
+    var re = new RegExp(pattern, matchCase.value ? 'g' : 'gi');
+    return name.replace(re, replacement);
 }
 // MAING
 // =====
@@ -263,18 +364,23 @@ function zeroPad(number, size) {
     return minus + str.slice(str.length - size);
 }
 ok.onClick = function () {
+    var newNames = [];
     for (i = 0; i < allItms.length; i++) {
-        if (allItms[i].artinCb.value) {
-            var itm = allItms[i];
-            if (need.value) {
-                var num = i + 1;
-            } else if (oneZ.value) {
-                var num = zeroPad(i + 1, 2);
-            } else {
-                var num = zeroPad(i + 1, 3);
-            }
-            itm.artboard.name = prefixV.text + num + suffV.text;
+        if (!allItms[i].artinCb.value) continue;
+        try {
+            var newName = getNewName(i);
+        } catch (e) {
+            alert("Invalid regular expression:\n" + e.message);
+            return;
         }
+        if (newName == '') {
+            alert("Artboard " + (i + 1) + " would get an empty name.");
+            return;
+        }
+        newNames.push({ artboard: allItms[i].artboard, name: newName });
+    }
+    for (i = 0; i < newNames.length; i++) {
+        newNames[i].artboard.name = newNames[i].name;
     }
     artboardRenamer.close();
 }
