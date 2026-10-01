@@ -1,5 +1,5 @@
 /**
- * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.2.0 Oct 01 2026 12:00:00 GMT+0000
+ * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.3.0 Oct 01 2026 12:00:00 GMT+0000
  */
 /*
 <javascriptresource>
@@ -29,13 +29,17 @@ Release Notes:
   - New "Rename" button applies the changes and keeps the dialog open; "OK" closes it.
   - Prefix and suffix are added around the original artboard name ("Keep original name").
   - Numbering is optional ("None" format).
+- 1.3.0: New artboard list
+  - The list scrolls with the mouse wheel.
+  - Multiple selection with Shift+click (range) and Ctrl/Cmd+click.
+  - "New Name" column with an always-on live preview (the Preview checkbox is gone).
 
 How to Use:
 1. Open the script in Adobe Illustrator.
 2. Launch the "Batch ArtBoard Renamer" dialog.
-3. Select the artboards you wish to rename or choose to rename all.
+3. Select the artboards you wish to rename (Shift+click for a range, Ctrl/Cmd+click to add or remove) or choose "Select all".
 4. Set the desired prefix, suffix, and numbering format.
-5. Optionally, use the preview feature to see how artboard names will change.
+5. Check the "New Name" column to see how artboard names will change.
 6. Click "Rename" to apply the changes (the dialog stays open), then "OK" to close it.
 
 Features:
@@ -49,7 +53,7 @@ Features:
 - Auto-numbering: The script automatically numbers artboards sequentially.
 - Find & Replace: Replace text in the existing artboard names, optionally
   case-sensitive or using regular expressions.
-- Preview: A preview option allows you to see changes before applying.
+- Preview: The "New Name" column shows the changes live before applying them.
 
 Note: Ensure that Adobe Illustrator is running before executing the script.
 
@@ -79,85 +83,52 @@ artboardRenamer.alignChildren = ["left", "top"];
 artboardRenamer.spacing = 15;
 artboardRenamer.margins = 15;
 
-// PLCG
-// ====
-var plcG = artboardRenamer.add("group", undefined, { name: "plcG" });
-plcG.orientation = "row";
-plcG.alignChildren = ["left", "center"];
-plcG.spacing = 10;
-plcG.margins = [18, 0, 0, 0];
+// LISTG
+// =====
+var listG = artboardRenamer.add("group", undefined, { name: "listG" });
+listG.orientation = "row";
+listG.alignChildren = ["left", "center"];
+listG.spacing = 10;
+listG.margins = 0;
 
-var chkAllPre = plcG.add("checkbox", undefined, undefined, { name: "prefix" });
-chkAllPre.text = "Prefix";
-chkAllPre.preferredSize.width = 68;
+var chkAll = listG.add("checkbox", undefined, undefined, { name: "chkAll" });
+chkAll.text = "Select all";
 
-var artNmT = plcG.add("statictext", undefined, undefined, { name: "artNmT" });
-artNmT.text = "Artboard Name";
-
-var tabList = artboardRenamer.add('group');
-tabList.orientation = 'column';
-// SCROLLWIN
-// =========
-var scrollWin = tabList.add('group');
-scrollWin.alignChildren = 'fill';
-var pageListPanel = scrollWin.add('panel');
-pageListPanel.alignChildren = 'left';
-
+var selHintT = listG.add("statictext", undefined, undefined, { name: "selHintT" });
+selHintT.text = "(Shift+click to select a range, Ctrl/Cmd+click to add or remove)";
 
 var doc = app.activeDocument;
 var doards = doc.artboards;
 var allItms = [];
-if (doards.length <= 10) { // Without scroll
-    for (var i = 0; i < doards.length; i++) {
-        rowItem = pageListPanel.add('group');
-        rowItem.margins = [3, 0, 0, 0];
-        addNewRow(i, rowItem);
-    }
-} else { // With scroll
-    pageListPanel.maximumSize.height = 350;
-    var smallList = pageListPanel.add('group');
-    smallList.orientation = 'column';
-    smallList.alignment = 'left';
-    smallList.maximumSize.height = doards.length * 40;
 
-    var scroll = scrollWin.add('scrollbar');
-    scroll.stepdelta = 30;
-    scroll.preferredSize.width = 16;
-    scroll.maximumSize.height = pageListPanel.maximumSize.height;
-    for (var i = 0; i < doards.length; i++) {
-        rowItem = smallList.add('group');
-        rowItem.alignChildren = ["left", "center"];
-        addNewRow(i, rowItem);
-    }
-    scroll.maxvalue = (doards.length * 31);
-    scroll.onChanging = function () {
-        smallList.location.y = -1 * this.value;
-    }
+// ARTLIST
+// =======
+var artList = artboardRenamer.add("listbox", undefined, undefined, {
+    name: "artList",
+    multiselect: true,
+    numberOfColumns: 3,
+    showHeaders: true,
+    columnTitles: ["#", "Artboard Name", "New Name"],
+    columnWidths: [45, 300, 300]
+});
+artList.preferredSize.width = 665;
+artList.preferredSize.height = 350;
+artList.alignment = ["fill", "top"];
+
+for (var i = 0; i < doards.length; i++) {
+    var row = artList.add("item", String(i + 1));
+    row.subItems[0].text = doards[i].name;
+    allItms.push({ row: row, name: doards[i].name, artboard: doards[i] });
 }
+artList.onChange = previewClick;
 
-
-function addNewRow(ind, addTo) {
-    var obj = {
-        artinCb: addTo.add("checkbox", undefined, undefined, { name: "artinCb" }),
-        indNum: addTo.add("statictext", undefined, undefined, { name: "indNum" }),
-        oldArtName: addTo.add('edittext {properties: {name: "oldArtName"}}'),
-        artboard: doards[ind]
-    }
-    obj.oldArtName.onChange = function () {
-        if (this.text == '') this.text = this.orginalText;
-    }
-    obj.oldArtName.text = doards[ind].name;
-    obj.oldArtName.orginalText = doards[ind].name;
-    obj.oldArtName.preferredSize.width = 350;
-    obj.indNum.preferredSize.width = 40;
-    obj.indNum.text = ind + 1;
-    obj.artinCb.cbFor = ind;
-    obj.artinCb.onClick = previewClick;
-    allItms.push(obj);
-}
-chkAllPre.onClick = function () {
-    for (var i = 0; i < allItms.length; i++) {
-        allItms[i].artinCb.value = this.value;
+chkAll.onClick = function () {
+    if (this.value) {
+        var all = [];
+        for (var i = 0; i < allItms.length; i++) all.push(i);
+        artList.selection = all;
+    } else {
+        artList.selection = null;
     }
     previewClick();
 }
@@ -196,14 +167,14 @@ prefixT.preferredSize.width = 50;
 
 var prefixV = preSuG.add('edittext {properties: {name: "prefixV"}}');
 prefixV.preferredSize.width = 150;
-prefixV.onChange = previewClick;
+prefixV.onChanging = previewClick;
 var postT = preSuG.add("statictext", undefined, undefined, { name: "postT" });
 postT.text = "Suffix";
 postT.preferredSize.width = 50;
 
 var suffV = preSuG.add('edittext {properties: {name: "suffV"}}');
 suffV.preferredSize.width = 150;
-suffV.onChange = previewClick;
+suffV.onChanging = previewClick;
 
 // KEEPG
 // =====
@@ -280,14 +251,14 @@ findT.preferredSize.width = 50;
 
 var findV = findRowG.add('edittext {properties: {name: "findV"}}');
 findV.preferredSize.width = 150;
-findV.onChange = previewClick;
+findV.onChanging = previewClick;
 var replT = findRowG.add("statictext", undefined, undefined, { name: "replT" });
 replT.text = "Replace";
 replT.preferredSize.width = 50;
 
 var replV = findRowG.add('edittext {properties: {name: "replV"}}');
 replV.preferredSize.width = 150;
-replV.onChange = previewClick;
+replV.onChanging = previewClick;
 
 var findOptG = findRepG.add("group", undefined, { name: "findOptG" });
 findOptG.orientation = "row";
@@ -322,28 +293,37 @@ mainuiG.spacing = 10;
 mainuiG.margins = 0;
 mainuiG.alignment = ["fill", "top"];
 
-var preview = mainuiG.add("checkbox", undefined, undefined, { name: "preview" });
-preview.text = "Preview";
-preview.onClick = previewClick;
+var statusT = mainuiG.add("statictext", undefined, undefined, { name: "statusT" });
+statusT.preferredSize.width = 250;
 
+// Fills the "New Name" column: only selected artboards whose name would change
 function previewClick() {
+    var selected = 0;
+    var error = '';
     for (i = 0; i < allItms.length; i++) {
         var itm = allItms[i];
-        var newName = itm.oldArtName.orginalText;
-        if (preview.value && itm.artinCb.value) {
+        var newName = '';
+        itm.row.checked = itm.row.selected;
+        if (itm.row.selected) {
+            selected++;
             try {
-                newName = getNewName(i) || newName;
-            } catch (e) { } // Invalid regular expression: keep the original name
+                newName = getNewName(i);
+            } catch (e) {
+                error = "Invalid regular expression";
+            }
+            if (newName == itm.name) newName = '';
         }
-        itm.oldArtName.text = newName;
+        if (itm.row.subItems[1].text != newName) itm.row.subItems[1].text = newName;
     }
+    chkAll.value = allItms.length > 0 && selected == allItms.length;
+    statusT.text = error || (selected + " of " + allItms.length + " artboards selected");
 }
 
 function getNewName(ind) {
     if (modeFR.value) {
-        return findReplace(allItms[ind].oldArtName.orginalText);
+        return findReplace(allItms[ind].name);
     }
-    var name = keepName.value ? allItms[ind].oldArtName.orginalText : '';
+    var name = keepName.value ? allItms[ind].name : '';
     if (noNum.value) {
         var num = '';
     } else if (need.value) {
@@ -393,7 +373,7 @@ function zeroPad(number, size) {
 rename.onClick = function () {
     var newNames = [];
     for (i = 0; i < allItms.length; i++) {
-        if (!allItms[i].artinCb.value) continue;
+        if (!allItms[i].row.selected) continue;
         try {
             var newName = getNewName(i);
         } catch (e) {
@@ -404,18 +384,25 @@ rename.onClick = function () {
             alert("Artboard " + (i + 1) + " would get an empty name.");
             return;
         }
-        newNames.push({ artboard: allItms[i].artboard, field: allItms[i].oldArtName, name: newName });
+        newNames.push({ itm: allItms[i], name: newName });
+    }
+    if (newNames.length == 0) {
+        alert("Select at least one artboard to rename.");
+        return;
     }
     for (i = 0; i < newNames.length; i++) {
-        newNames[i].artboard.name = newNames[i].name;
-        newNames[i].field.orginalText = newNames[i].name;
+        var itm = newNames[i].itm;
+        itm.artboard.name = newNames[i].name;
+        itm.name = newNames[i].name;
+        itm.row.subItems[0].text = itm.name;
     }
-    // Show the applied names, so the rules are not previewed twice
-    preview.value = false;
+    // Clear the selection, so the same rules are not applied twice by mistake
+    artList.selection = null;
     previewClick();
     app.redraw();
 }
 ok.onClick = function () {
     artboardRenamer.close();
 }
+previewClick();
 artboardRenamer.show();
