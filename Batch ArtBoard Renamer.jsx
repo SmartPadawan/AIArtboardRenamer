@@ -1,5 +1,5 @@
 /**
- * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.1.0 Oct 01 2026 12:00:00 GMT+0000
+ * @@@BUILDINFO@@@ Batch-ArtBoard-Renamer.jsx 1.2.0 Oct 01 2026 12:00:00 GMT+0000
  */
 /*
 <javascriptresource>
@@ -25,6 +25,10 @@ Release Notes:
 - 1.1.0: Find & Replace
   - New "Find & Replace" mode to search and replace text in existing artboard names.
   - Options for case-sensitive matching and regular expressions.
+- 1.2.0: Rename without closing
+  - New "Rename" button applies the changes and keeps the dialog open; "OK" closes it.
+  - Prefix and suffix are added around the original artboard name ("Keep original name").
+  - Numbering is optional ("None" format).
 
 How to Use:
 1. Open the script in Adobe Illustrator.
@@ -32,12 +36,13 @@ How to Use:
 3. Select the artboards you wish to rename or choose to rename all.
 4. Set the desired prefix, suffix, and numbering format.
 5. Optionally, use the preview feature to see how artboard names will change.
-6. Click "OK" to apply the changes.
+6. Click "Rename" to apply the changes (the dialog stays open), then "OK" to close it.
 
 Features:
 - Prefix: Add a custom prefix to the artboard name.
 - Suffix: Add a custom suffix to the artboard name.
-- Numbering Format: Choose from 3 formats:
+- Keep original name: Keep the current name between prefix and suffix.
+- Numbering Format: Choose no numbering or one of 3 formats:
   - 1, 2, 3, 4, ...
   - 01, 02, 03, 04, ...
   - 001, 002, 003, 004, ...
@@ -199,6 +204,19 @@ postT.preferredSize.width = 50;
 var suffV = preSuG.add('edittext {properties: {name: "suffV"}}');
 suffV.preferredSize.width = 150;
 suffV.onChange = previewClick;
+
+// KEEPG
+// =====
+var keepG = artboardRenamer.add("group", undefined, { name: "keepG" });
+keepG.orientation = "row";
+keepG.alignChildren = ["left", "center"];
+keepG.spacing = 10;
+keepG.margins = [60, 0, 0, 0];
+
+var keepName = keepG.add("checkbox", undefined, undefined, { name: "keepName" });
+keepName.text = "Keep original name";
+keepName.value = true;
+keepName.onClick = previewClick;
 // ARTBOARDRENAMER
 // ===============
 var divider1 = artboardRenamer.add("panel", undefined, undefined, { name: "divider1" });
@@ -224,9 +242,12 @@ forMatG.alignChildren = ["left", "center"];
 forMatG.spacing = 10;
 forMatG.margins = 0;
 
+var noNum = forMatG.add("radiobutton", undefined, undefined, { name: "noNum" });
+noNum.text = "None";
+noNum.value = true;
+noNum.onClick = previewClick;
 var need = forMatG.add("radiobutton", undefined, undefined, { name: "need" });
 need.text = "1,2,3,4,5, ...";
-need.value = true;
 need.onClick = previewClick;
 var oneZ = forMatG.add("radiobutton", undefined, undefined, { name: "oneZ" });
 oneZ.text = "01,02,03,04,05,06, ...";
@@ -283,6 +304,7 @@ useRegex.onClick = previewClick;
 
 function updateMode() {
     preSuG.enabled = modeNum.value;
+    keepG.enabled = modeNum.value;
     numFG.enabled = modeNum.value;
     findRepG.enabled = modeFR.value;
 }
@@ -321,14 +343,17 @@ function getNewName(ind) {
     if (modeFR.value) {
         return findReplace(allItms[ind].oldArtName.orginalText);
     }
-    if (need.value) {
+    var name = keepName.value ? allItms[ind].oldArtName.orginalText : '';
+    if (noNum.value) {
+        var num = '';
+    } else if (need.value) {
         var num = ind + 1;
     } else if (oneZ.value) {
         var num = zeroPad(ind + 1, 2);
     } else {
         var num = zeroPad(ind + 1, 3);
     }
-    return prefixV.text + num + suffV.text;
+    return prefixV.text + name + num + suffV.text;
 }
 
 function findReplace(name) {
@@ -351,11 +376,13 @@ mainG.alignChildren = ["right", "fill"];
 mainG.spacing = 10;
 mainG.margins = 0;
 
-var cancel = mainG.add("button", undefined, undefined, { name: "cancel" });
-cancel.text = "Cancel";
+var rename = mainG.add("button", undefined, undefined, { name: "rename" });
+rename.text = "Rename";
 
-var ok = mainG.add("button", undefined, undefined, { name: "ok" });
-ok.text = "Ok";
+// Not named "ok", so that Enter in a text field does not close the dialog
+var ok = mainG.add("button", undefined, undefined, { name: "close" });
+ok.text = "OK";
+artboardRenamer.cancelElement = ok;
 
 function zeroPad(number, size) {
     var minus = (number < 0) ? '-' : '',
@@ -363,7 +390,7 @@ function zeroPad(number, size) {
 
     return minus + str.slice(str.length - size);
 }
-ok.onClick = function () {
+rename.onClick = function () {
     var newNames = [];
     for (i = 0; i < allItms.length; i++) {
         if (!allItms[i].artinCb.value) continue;
@@ -377,11 +404,18 @@ ok.onClick = function () {
             alert("Artboard " + (i + 1) + " would get an empty name.");
             return;
         }
-        newNames.push({ artboard: allItms[i].artboard, name: newName });
+        newNames.push({ artboard: allItms[i].artboard, field: allItms[i].oldArtName, name: newName });
     }
     for (i = 0; i < newNames.length; i++) {
         newNames[i].artboard.name = newNames[i].name;
+        newNames[i].field.orginalText = newNames[i].name;
     }
+    // Show the applied names, so the rules are not previewed twice
+    preview.value = false;
+    previewClick();
+    app.redraw();
+}
+ok.onClick = function () {
     artboardRenamer.close();
 }
 artboardRenamer.show();
