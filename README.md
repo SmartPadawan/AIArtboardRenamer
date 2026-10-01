@@ -9,6 +9,7 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
   - `1, 2, 3, ...`
   - `01, 02, 03, ...`
   - `001, 002, 003, ...`
+- **Find & Replace**: Search and replace text in existing artboard names, with optional case matching and regular expressions.
 - **Live Preview**: Instantly see how artboard names will look before applying changes.
 - **Scrollable Artboard List**: Easily handle documents with a large number of artboards.
 
@@ -24,11 +25,13 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
 2. Go to `File > Scripts` and select `Batch ArtBoard Renamer`.
 3. Customize your options in the dialog box:
    - **Select Artboards**: Use the checkboxes to choose which artboards to rename, or click the global "Prefix" checkbox to select all.
+   - **Mode**: Choose `Prefix / Suffix / Numbering` to build new names, or `Find & Replace` to edit the existing ones.
    - **Prefix and Suffix**: Enter desired text to prepend or append to artboard names.
    - **Numbering Format**: Choose one of the three styles:
      - `1, 2, 3, ...`
      - `01, 02, 03, ...`
      - `001, 002, 003, ...`
+   - **Find & Replace**: Enter the text to find and its replacement. Enable `Match case` for case-sensitive search, or `Regular expression` to use a JavaScript regex (with `$1`, `$2`, ... in the replacement).
    - **Live Preview**: Enable the "Preview" option to instantly view changes.
 4. Click **OK** to rename the selected artboards or **Cancel** to exit without changes.
 
@@ -40,6 +43,9 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
   - Simple: `1, 2, 3, ...`
   - Padded with one zero: `01, 02, 03, ...`
   - Padded with two zeros: `001, 002, 003, ...`
+- **Find & Replace**: Replaces every occurrence of the searched text in the current name of each selected artboard.
+  - **Match case**: Distinguish between uppercase and lowercase.
+  - **Regular expression**: Treat the search text as a regular expression (e.g. find `_(\d+)$`, replace with `-$1`).
 - **Preview**: See updated artboard names in real time before applying changes.
 
 ## Preview
@@ -53,6 +59,7 @@ Click the image or [here](https://www.youtube.com/watch?v=93vuokYAakc) to watch 
 ## Example Scenarios
 - Rename all artboards to `Page_01`, `Page_02`, `Page_03`, ...
 - Add a custom prefix like `Draft_` and suffix like `_v1` to each artboard name.
+- Replace `Draft` with `Final` in all artboard names.
 - Use live preview to fine-tune naming before applying changes.
 
 ## Contributing
