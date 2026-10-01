@@ -3,15 +3,15 @@
 A comprehensive Adobe Illustrator script for batch renaming artboards with a variety of customization options, including individual artboard selection, prefixes, suffixes, numbering formats, and live preview functionality.
 
 ## Features
-- **Batch Rename or Individual Selection**: Rename all artboards or select specific ones.
+- **Batch Rename or Individual Selection**: Rename all artboards or select specific ones, with Shift+click and Ctrl/Cmd+click multiple selection.
 - **Custom Prefix and Suffix**: Add a prefix and/or suffix to artboard names.
 - **Flexible Numbering Formats**: No numbering, or choose from:
   - `1, 2, 3, ...`
   - `01, 02, 03, ...`
   - `001, 002, 003, ...`
 - **Find & Replace**: Search and replace text in existing artboard names, with optional case matching and regular expressions.
-- **Live Preview**: Instantly see how artboard names will look before applying changes.
-- **Scrollable Artboard List**: Easily handle documents with a large number of artboards.
+- **Live Preview**: The "New Name" column instantly shows how artboard names will look before applying changes.
+- **Scrollable Artboard List**: Easily handle documents with a large number of artboards, including mouse wheel scrolling.
 
 ## Installation
 1. **Download the Script**: Clone this repository or download the `Batch ArtBoard Renamer.jsx` file.
@@ -24,7 +24,7 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
 1. Open a document in Adobe Illustrator with artboards.
 2. Go to `File > Scripts` and select `Batch ArtBoard Renamer`.
 3. Customize your options in the dialog box:
-   - **Select Artboards**: Use the checkboxes to choose which artboards to rename, or click the global "Prefix" checkbox to select all.
+   - **Select Artboards**: Click the artboards to rename in the list. Use Shift+click to select a range, Ctrl+click (Cmd+click on macOS) to add or remove a single artboard, or the "Select all" checkbox.
    - **Mode**: Choose `Prefix / Suffix / Numbering` to build new names, or `Find & Replace` to edit the existing ones.
    - **Prefix and Suffix**: Enter desired text to prepend or append to artboard names.
    - **Keep original name**: Keep the current name between prefix and suffix (e.g. `SICIM-` + `Deutchland-color`). Uncheck it to replace the name entirely.
@@ -33,12 +33,12 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
      - `01, 02, 03, ...`
      - `001, 002, 003, ...`
    - **Find & Replace**: Enter the text to find and its replacement. Enable `Match case` for case-sensitive search, or `Regular expression` to use a JavaScript regex (with `$1`, `$2`, ... in the replacement).
-   - **Live Preview**: Enable the "Preview" option to instantly view changes.
-4. Click **Rename** to rename the selected artboards. The dialog stays open, so you can apply more changes.
+   - **Live Preview**: The "New Name" column shows the new name of each selected artboard while you type. It stays empty for artboards that are not selected or whose name would not change.
+4. Click **Rename** to rename the selected artboards. The dialog stays open and the selection is cleared, so you can apply more changes.
 5. Click **OK** to close the script.
 
 ## Options Explained
-- **Individual Artboard Selection**: Each artboard has its own checkbox for precise renaming control.
+- **Individual Artboard Selection**: Select exactly the artboards to rename, with standard Shift+click and Ctrl/Cmd+click multiple selection.
 - **Prefix**: Text added at the beginning of each artboard name.
 - **Suffix**: Text added at the end of each artboard name.
 - **Keep original name**: The new name is `prefix + original name + number + suffix`. When unchecked, it is `prefix + number + suffix`.
@@ -49,7 +49,7 @@ A comprehensive Adobe Illustrator script for batch renaming artboards with a var
 - **Find & Replace**: Replaces every occurrence of the searched text in the current name of each selected artboard.
   - **Match case**: Distinguish between uppercase and lowercase.
   - **Regular expression**: Treat the search text as a regular expression (e.g. find `_(\d+)$`, replace with `-$1`).
-- **Preview**: See updated artboard names in real time before applying changes.
+- **New Name column**: See updated artboard names in real time before applying changes.
 
 ## Preview
 
